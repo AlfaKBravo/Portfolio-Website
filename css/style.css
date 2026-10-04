@@ -393,6 +393,8 @@ strong { font-weight: 600; }
 .tile-screen .tag { position: absolute; left: var(--s-3); bottom: var(--s-3); transform: rotate(-3deg); }
 .tile h3 { font: 800 var(--t-xl)/1.15 var(--f-display); letter-spacing: -.02em; margin-bottom: var(--s-2); }
 .tile > p:not(.tile-links) { color: var(--ink-2); margin-bottom: var(--s-4); }
+.tile-tech { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-bottom: var(--s-4); }
+.tile-tech li { padding: 2px var(--s-2); border: 1.5px solid var(--hair); font: 500 var(--t-xs)/1.4 var(--f-mono); }
 .tile-links { display: flex; gap: var(--s-5); font: 500 var(--t-sm)/1.4 var(--f-mono); }
 .tile-links span { color: var(--ink-2); }
 .tile-links a { font-weight: 600; text-decoration-color: var(--spot); text-decoration-thickness: var(--bw); text-underline-offset: 4px; }

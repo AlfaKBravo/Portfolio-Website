@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500..900;1,9..144,500..900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Press+Start+2P&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=2">
   <script>
     document.documentElement.classList.add('js');
     try { var t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
@@ -218,7 +218,7 @@
           <h2>Projects</h2>
           <p class="folio"><span>P.04</span> Stage select</p>
         </header>
-        <p class="page-lede">New projects are in progress and will be added here soon. Meanwhile, see <a href="https://github.com/AlfaKBravo" target="_blank" rel="noopener">GitHub</a> for current work.</p>
+        <p class="page-lede">Things I've built, each with a live demo and its source code. More are on the way; see <a href="https://github.com/AlfaKBravo" target="_blank" rel="noopener">GitHub</a> for current work.</p>
         <!--
           HOW TO ADD A PROJECT: copy one <article class="tile"> block below,
           remove the "is-upcoming" class, change the tag text, and fill in the
@@ -226,11 +226,12 @@
           <img src="assets/your-shot.png" alt="..."> inside .tile-screen.
         -->
         <div class="tiles">
-          <article class="tile is-upcoming reveal">
-            <div class="tile-screen"><span class="tile-no" aria-hidden="true">1</span><span class="tag tag-live">In development</span></div>
-            <h3>Upcoming project #1</h3>
-            <p>A new full-stack project is in the works. Details, a live demo and source code will be published here once it ships.</p>
-            <p class="tile-links"><span>Demo and source: coming soon</span></p>
+          <article class="tile reveal">
+            <div class="tile-screen"><img src="assets/pathfinding-playground.png" alt="Pathfinding Playground: A* has found a path around a field of mud on a blueprint-style grid" width="1440" height="900" loading="lazy"><span class="tag">Project 01 · Live</span></div>
+            <h3>Pathfinding &amp; Game AI Playground</h3>
+            <p>Draw walls and mud, then watch BFS, Dijkstra and A* search the grid step by step. In Chase mode an A* agent hunts a target you steer, replanning on every move.</p>
+            <ul class="tile-tech" aria-label="Built with"><li>JavaScript</li><li>HTML Canvas</li><li>Hand-written heap</li><li>Unit tests</li></ul>
+            <p class="tile-links"><a href="https://pathfinding-playground.vercel.app/" target="_blank" rel="noopener">Live demo</a><a href="https://github.com/AlfaKBravo/Pathfinding-Playground" target="_blank" rel="noopener">Source</a></p>
           </article>
           <article class="tile is-upcoming reveal">
             <div class="tile-screen"><span class="tile-no" aria-hidden="true">2</span><span class="tag tag-live">In development</span></div>
