@@ -5,38 +5,30 @@
   const $ = (s) => document.querySelector(s);
   const root = document.documentElement;
 
-  /* ---------- Theme toggle ---------- */
+  /* ---------- Day / night edition ---------- */
   $('#themeToggle').addEventListener('click', () => {
-    const isLight = root.dataset.theme
-      ? root.dataset.theme === 'light'
-      : window.matchMedia('(prefers-color-scheme: light)').matches;
-    const next = isLight ? 'dark' : 'light';
+    const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
     root.dataset.theme = next;
     try { localStorage.setItem('theme', next); } catch (e) {}
   });
 
-  /* ---------- Mobile menu ---------- */
+  /* ---------- Mobile contents menu ---------- */
   const menuBtn = $('#menuBtn');
   const navLinks = $('#navLinks');
+  const closeMenu = () => { navLinks.classList.remove('open'); menuBtn.setAttribute('aria-expanded', 'false'); };
   menuBtn.addEventListener('click', () => {
     const open = navLinks.classList.toggle('open');
-    menuBtn.setAttribute('aria-expanded', open);
+    menuBtn.setAttribute('aria-expanded', String(open));
   });
-  navLinks.querySelectorAll('a').forEach((a) =>
-    a.addEventListener('click', () => {
-      navLinks.classList.remove('open');
-      menuBtn.setAttribute('aria-expanded', false);
-    })
-  );
+  navLinks.querySelectorAll('a').forEach((a) => a.addEventListener('click', closeMenu));
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
 
-  /* ---------- Nav border + active link ---------- */
-  const nav = $('#nav');
+  /* ---------- Active link in the contents ---------- */
   const sections = [...document.querySelectorAll('main section[id]')];
   const links = [...navLinks.querySelectorAll('a')];
   const onScroll = () => {
-    nav.classList.toggle('scrolled', window.scrollY > 10);
     let current = '';
-    sections.forEach((s) => { if (window.scrollY >= s.offsetTop - 120) current = s.id; });
+    sections.forEach((s) => { if (window.scrollY >= s.offsetTop - 140) current = s.id; });
     links.forEach((l) => l.classList.toggle('active', l.getAttribute('href') === '#' + current));
   };
   window.addEventListener('scroll', onScroll, { passive: true });
@@ -58,10 +50,18 @@
   /* ==========================================================
      BUG DODGER — mini game for the Game Dev Corner
      ========================================================== */
+  const INK = '#0c0a08';      // screen
+  const PAPER = '#f0e7d3';    // player, stars
+  const SPOT = '#ff5b3d';     // bugs, thrusters
+  const GOLD = '#f2c230';     // coffee
+
   const canvas = $('#gameCanvas');
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
   const overlay = $('#gOverlay');
+  const ovTitle = overlay.querySelector('.ov-title');
+  const ovSub = overlay.querySelector('.ov-sub');
+  const startTxt = $('#gStartTxt');
   const scoreEl = $('#gScore');
   const highEl = $('#gHigh');
 
@@ -70,10 +70,9 @@
   highEl.textContent = high;
 
   const player = { x: W / 2 - 14, y: H - 34, w: 28, h: 20, speed: 260 };
-  let items, score, running, last, spawnT, elapsed, stars;
+  let items = [], score = 0, running = false, last = 0, spawnT = 0, elapsed = 0;
   const keys = { left: false, right: false };
-
-  stars = Array.from({ length: 40 }, () => ({ x: Math.random() * W, y: Math.random() * H, s: Math.random() * 1.5 + .5 }));
+  const stars = Array.from({ length: 40 }, () => ({ x: Math.random() * W, y: Math.random() * H, s: Math.random() * 1.5 + .5 }));
 
   function reset() {
     items = []; score = 0; spawnT = 0; elapsed = 0;
@@ -93,51 +92,52 @@
 
   function drawPlayer() {
     const { x, y, w, h } = player;
-    ctx.fillStyle = '#39ff88';
+    ctx.fillStyle = PAPER;
     ctx.fillRect(x + w / 2 - 3, y - 6, 6, 6);   // nose
     ctx.fillRect(x + 4, y, w - 8, h - 6);        // body
     ctx.fillRect(x, y + 8, w, 6);                // wings
-    ctx.fillStyle = '#ff3d81';
+    ctx.fillStyle = SPOT;
     ctx.fillRect(x + 6, y + h - 6, 5, 4);        // thrusters
     ctx.fillRect(x + w - 11, y + h - 6, 5, 4);
   }
 
   function drawBug(b) {
     const s = b.size, x = b.x, y = b.y;
-    ctx.fillStyle = '#ff3d81';
+    ctx.fillStyle = SPOT;
     ctx.fillRect(x + s * .25, y + s * .2, s * .5, s * .65);      // body
-    ctx.fillStyle = '#ffd1e1';
-    ctx.fillRect(x + s * .32, y + s * .3, s * .12, s * .12);     // eyes
-    ctx.fillRect(x + s * .56, y + s * .3, s * .12, s * .12);
-    ctx.fillStyle = '#ff3d81';
     const leg = Math.sin(b.wob) * 2;
     ctx.fillRect(x, y + s * .35 + leg, s * .25, 2);              // legs
     ctx.fillRect(x + s * .75, y + s * .35 - leg, s * .25, 2);
     ctx.fillRect(x, y + s * .65 - leg, s * .25, 2);
     ctx.fillRect(x + s * .75, y + s * .65 + leg, s * .25, 2);
+    ctx.fillStyle = INK;
+    ctx.fillRect(x + s * .32, y + s * .3, s * .12, s * .12);     // eyes
+    ctx.fillRect(x + s * .56, y + s * .3, s * .12, s * .12);
   }
 
   function drawCoffee(c) {
     const x = c.x, y = c.y;
-    ctx.fillStyle = '#f5d76e';
-    ctx.fillRect(x + 2, y + 5, 10, 10);
-    ctx.fillRect(x + 12, y + 7, 3, 5);
-    ctx.fillStyle = '#7a4a1e';
-    ctx.fillRect(x + 3, y + 6, 8, 3);
-    ctx.fillStyle = 'rgba(255,255,255,.6)';
-    ctx.fillRect(x + 5, y, 2, 3);
+    ctx.fillStyle = GOLD;
+    ctx.fillRect(x + 2, y + 5, 10, 10);   // cup
+    ctx.fillRect(x + 12, y + 7, 3, 5);    // handle
+    ctx.fillStyle = INK;
+    ctx.fillRect(x + 3, y + 6, 8, 3);     // coffee
+    ctx.fillStyle = PAPER;
+    ctx.fillRect(x + 5, y, 2, 3);         // steam
     ctx.fillRect(x + 8, y + 1, 2, 3);
   }
 
   function drawBg(dt) {
-    ctx.fillStyle = '#05040c';
+    ctx.fillStyle = INK;
     ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = 'rgba(255,255,255,.5)';
+    ctx.globalAlpha = .45;
+    ctx.fillStyle = PAPER;
     stars.forEach((st) => {
       st.y += st.s * 30 * dt;
       if (st.y > H) { st.y = 0; st.x = Math.random() * W; }
       ctx.fillRect(st.x, st.y, st.s, st.s);
     });
+    ctx.globalAlpha = 1;
   }
 
   function hit(a, b) {
@@ -146,13 +146,14 @@
 
   function gameOver() {
     running = false;
-    if (score > high) {
+    const isNewHigh = score > high;
+    if (isNewHigh) {
       high = score; highEl.textContent = high;
       try { localStorage.setItem('bugDodgerHigh', high); } catch (e) {}
     }
-    overlay.querySelector('.big').textContent = 'GAME OVER';
-    overlay.querySelector('.small').textContent = 'SCORE: ' + score + (score >= high && score > 0 ? '  NEW HI!' : '');
-    $('#gStart').textContent = 'PLAY AGAIN';
+    ovTitle.textContent = 'GAME OVER';
+    ovSub.textContent = 'Score: ' + score + (isNewHigh ? '. New high score!' : '');
+    startTxt.textContent = 'Play again';
     overlay.classList.remove('hidden');
   }
 
@@ -176,10 +177,10 @@
       it.wob += dt * 12;
       if (hit(player, it)) {
         if (it.coffee) { score += 10; items.splice(i, 1); continue; }
-        drawPlayer(); return gameOver();
+        drawBug(it); drawPlayer(); scoreEl.textContent = score; return gameOver();
       }
       if (it.y > H) { items.splice(i, 1); if (!it.coffee) score += 1; continue; }
-      it.coffee ? drawCoffee(it) : drawBug(it);
+      if (it.coffee) drawCoffee(it); else drawBug(it);
     }
     drawPlayer();
     scoreEl.textContent = score;
@@ -189,6 +190,7 @@
   function start() {
     reset();
     overlay.classList.add('hidden');
+    keys.left = keys.right = false;
     running = true;
     last = performance.now();
     requestAnimationFrame(loop);
@@ -199,24 +201,24 @@
 
   $('#gStart').addEventListener('click', start);
 
-  const isGameKey = (k) => ['ArrowLeft', 'ArrowRight', 'a', 'd', 'A', 'D'].includes(k);
+  const dirOf = (k) => (k === 'ArrowLeft' || k === 'a' || k === 'A') ? 'left'
+    : (k === 'ArrowRight' || k === 'd' || k === 'D') ? 'right' : null;
   window.addEventListener('keydown', (e) => {
-    if (!running || !isGameKey(e.key)) return;
+    const dir = dirOf(e.key);
+    if (!running || !dir) return;
     e.preventDefault();
-    if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') keys.left = true;
-    if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') keys.right = true;
+    keys[dir] = true;
   });
   window.addEventListener('keyup', (e) => {
-    if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') keys.left = false;
-    if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') keys.right = false;
+    const dir = dirOf(e.key);
+    if (dir) keys[dir] = false;
   });
+  window.addEventListener('blur', () => { keys.left = keys.right = false; });
 
-  // touch: press left/right half of canvas, or on-screen buttons
+  // touch: on-screen buttons, or hold the left / right half of the screen
   const hold = (el, dir) => {
-    const on = (e) => { e.preventDefault(); keys[dir] = true; };
-    const off = () => { keys[dir] = false; };
-    el.addEventListener('pointerdown', on);
-    ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => el.addEventListener(ev, off));
+    el.addEventListener('pointerdown', (e) => { e.preventDefault(); keys[dir] = true; });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => el.addEventListener(ev, () => { keys[dir] = false; }));
   };
   hold($('#gLeft'), 'left');
   hold($('#gRight'), 'right');
@@ -225,7 +227,12 @@
     const r = canvas.getBoundingClientRect();
     const dir = e.clientX - r.left < r.width / 2 ? 'left' : 'right';
     keys[dir] = true;
-    const up = () => { keys[dir] = false; window.removeEventListener('pointerup', up); };
+    const up = () => {
+      keys[dir] = false;
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
+    };
     window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
   });
 })();
